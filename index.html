@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#211d1b">
+  <title>给 Loke 的一封小情书 🐼</title>
+  <style>
+    :root {
+      --cream: #fff7eb;
+      --pink: #efb3c1;
+      --brown: #59443b;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #211d1b;
+      color: var(--cream);
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      -webkit-text-size-adjust: 100%;
+    }
+    body {
+      min-height: 100svh;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 0;
+    }
+    .page {
+      width: 100%;
+      max-width: 520px;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      padding: max(10px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+      text-align: center;
+      margin: 0 auto;
+    }
+    .eyebrow {
+      flex: 0 0 auto;
+      margin: 2px 0 10px;
+      color: #e8c9bb;
+      font-size: 11px;
+      letter-spacing: .13em;
+    }
+    .player {
+      position: relative;
+      overflow: hidden;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      background: #090909;
+      border-radius: 14px;
+      box-shadow: 0 14px 42px rgba(0,0,0,.32);
+    }
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #090909;
+    }
+    .end-screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 18px;
+      padding: 24px 18px;
+      background: #050505;
+      opacity: 1;
+      transition: opacity .35s ease;
+    }
+    .end-screen.visible { display: flex; }
+    .joke {
+      opacity: 0;
+      transform: translateY(7px);
+      color: #fff8ef;
+      font-size: clamp(22px, 6vw, 32px);
+      font-weight: 700;
+      letter-spacing: .04em;
+      transition: opacity .4s ease, transform .4s ease;
+    }
+    .joke.show { opacity: 1; transform: translateY(0); }
+    .question-wrap {
+      display: none;
+      width: min(100%, 330px);
+      animation: appear .55s ease both;
+    }
+    .question-title {
+      color: #fff2e4;
+      font-size: clamp(22px, 6vw, 31px);
+      line-height: 1.55;
+      font-weight: 800;
+      margin: 0 0 24px;
+      text-wrap: balance;
+    }
+    .choice-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+    .choice {
+      min-width: 0;
+      min-height: 54px;
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 16px;
+      padding: 14px 8px;
+      font: inherit;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .15s ease, background .2s ease;
+      box-shadow: 0 5px 16px rgba(0,0,0,.2);
+    }
+    .choice:active { transform: scale(.97); }
+    .yes {
+      background: #f2c6cf;
+      color: #5a333e;
+      border-color: #f2c6cf;
+    }
+    .no {
+      background: #fff7eb;
+      color: #59443b;
+    }
+    .response {
+      display: none;
+      margin: 20px 0 0;
+      min-height: 54px;
+      color: #ffe6ed;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.7;
+    }
+    .response.show { display: block; animation: appear .3s ease both; }
+    .replay-button {
+      display: none;
+      margin: 18px auto 0;
+      border: 1px solid rgba(255,255,255,.45);
+      background: transparent;
+      color: #fff2e4;
+      padding: 11px 18px;
+      border-radius: 999px;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .replay-button.show { display: inline-block; }
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .controls {
+      flex: 0 0 auto;
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 0 4px;
+    }
+    .main-button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 24px;
+      min-width: 176px;
+      min-height: 46px;
+      background: var(--cream);
+      color: var(--brown);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 5px 18px rgba(0,0,0,.18);
+    }
+    .main-button:active { transform: scale(.98); }
+    button:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
+    .hint {
+      flex: 0 0 auto;
+      margin: 0;
+      min-height: 18px;
+      color: #c8b4aa;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .hidden { display: none !important; }
+    @media (max-height: 650px) {
+      .page { padding-top: max(6px, env(safe-area-inset-top)); }
+      .eyebrow { margin-bottom: 5px; }
+      .controls { min-height: 60px; padding-top: 7px; }
+      .player { border-radius: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow">A LITTLE LETTER FOR LOKE 🐼</p>
+
+    <section class="player" aria-label="给 Loke 的互动影片">
+      <video id="video" playsinline webkit-playsinline preload="metadata">
+        您的浏览器暂不支持播放影片。
+      </video>
+
+      <div id="endScreen" class="end-screen" aria-live="polite">
+        <div id="joke" class="joke">最近缺人使唤</div>
+
+        <div id="questionWrap" class="question-wrap">
+          <p class="question-title">所以……<br>回来当同事吗？👀</p>
+          <div class="choice-row" id="choiceRow">
+            <button class="choice yes" id="yesButton" type="button">要！♡</button>
+            <button class="choice no" id="noButton" type="button">不要 🙈</button>
+          </div>
+          <p id="response" class="response" aria-live="polite"></p>
+          <button id="replayButton" class="replay-button" type="button">再看一次 ↻</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <button id="actionButton" class="main-button hidden" type="button">拆开看看 ›</button>
+    </div>
+    <p id="hint" class="hint">建议用手机竖屏观看 · 记得开声音哦</p>
+
+    <audio id="bgMusic" src="bg%20music.mp3" preload="auto" loop></audio>
+  </main>
+
+  <script>
+    // 请确保 4 个文件放在同一个文件夹里。
+    const PART1 = "part%201.mp4";
+    const PART2 = "part%202.mp4";
+
+    const video = document.getElementById("video");
+    const music = document.getElementById("bgMusic");
+    const button = document.getElementById("actionButton");
+    const hint = document.getElementById("hint");
+    const endScreen = document.getElementById("endScreen");
+    const joke = document.getElementById("joke");
+    const questionWrap = document.getElementById("questionWrap");
+    const yesButton = document.getElementById("yesButton");
+    const noButton = document.getElementById("noButton");
+    const response = document.getElementById("response");
+    const replayButton = document.getElementById("replayButton");
+
+    let stage = "part1";
+    let musicStarted = false;
+    let jokeTimer = null;
+    let noCount = 0;
+
+    async function startMusic() {
+      if (musicStarted) return;
+      try {
+        music.volume = 0.22;
+        await music.play();
+        musicStarted = true;
+      } catch (err) {
+        // 浏览器可能限制播放；在用户下一次点击时再尝试。
+      }
+    }
+
+    async function playVideo(src) {
+      video.pause();
+      video.src = src;
+      video.load();
+      try {
+        await video.play();
+      } catch (err) {
+        hint.textContent = "影片无法自动播放：请再按一次按钮，并确认文件名称正确。";
+        button.classList.remove("hidden");
+        button.textContent = "播放影片 ▶";
+      }
+    }
+
+    function resetEndScreen() {
+      clearTimeout(jokeTimer);
+      endScreen.classList.remove("visible");
+      joke.classList.remove("show");
+      joke.style.display = "block";
+      questionWrap.style.display = "none";
+      response.classList.remove("show");
+      response.textContent = "";
+      replayButton.classList.remove("show");
+      yesButton.disabled = false;
+      yesButton.style.opacity = "1";
+      noButton.disabled = false;
+      noButton.style.opacity = "1";
+      noCount = 0;
+    }
+
+    button.addEventListener("click", async () => {
+      await startMusic();
+
+      if (stage === "retry1") {
+        stage = "part1";
+        button.classList.add("hidden");
+        hint.textContent = "给你慢慢看 ♡";
+        await playVideo(PART1);
+      } else if (stage === "between" || stage === "retry2") {
+        stage = "part2";
+        button.classList.add("hidden");
+        hint.textContent = "后面还有……";
+        resetEndScreen();
+        await playVideo(PART2);
+      }
+    });
+
+    video.addEventListener("ended", () => {
+      if (stage === "part1") {
+        stage = "between";
+        button.textContent = "拆开看看 ›";
+        button.classList.remove("hidden");
+        hint.textContent = "里面还有话想跟你说。";
+      } else if (stage === "part2") {
+        stage = "ending";
+        button.classList.add("hidden");
+        hint.textContent = "";
+        endScreen.classList.add("visible");
+        joke.style.display = "block";
+        jokeTimer = setTimeout(() => {
+          joke.classList.add("show");
+          jokeTimer = setTimeout(() => {
+            joke.classList.remove("show");
+            jokeTimer = setTimeout(() => {
+              joke.style.display = "none";
+              questionWrap.style.display = "block";
+              questionWrap.style.animation = "appear .55s ease both";
+            }, 420);
+          }, 2200);
+        }, 1800);
+      }
+    });
+
+    video.addEventListener("error", () => {
+      if (stage === "part1") stage = "retry1";
+      else if (stage === "part2") stage = "retry2";
+      else return;
+      button.textContent = "重新播放 ▶";
+      button.classList.remove("hidden");
+      hint.textContent = "找不到影片。请确认文件名与 index.html 完全一致。";
+    });
+
+    yesButton.addEventListener("click", () => {
+      yesButton.disabled = true;
+      noButton.disabled = true;
+      response.textContent = "说好了哦！不准反悔 🐼💗";
+      response.classList.add("show");
+      replayButton.classList.add("show");
+    });
+
+    noButton.addEventListener("click", () => {
+      noCount += 1;
+      // 「不要」按钮固定大小，不会缩小；只切换可爱的回应。
+      const replies = [
+        "蛤——再考虑一下嘛 🥺",
+        "真的不要咩？我先当你在开玩笑 🤨",
+        "不行，我还没问完！再想想嘛 🐼",
+        "你确定？熊猫要开始委屈了……🥹",
+        "好啦好啦……可是同事位还帮你留着 👀"
+      ];
+      response.textContent = replies[Math.min(noCount - 1, replies.length - 1)];
+      response.classList.add("show");
+      // 按钮尺寸、位置与可点击性都保持不变。
+      if (noCount >= 5) {
+        noButton.textContent = "再考虑一下 ♡";
+      }
+    });
+
+    replayButton.addEventListener("click", async () => {
+      resetEndScreen();
+      stage = "part1";
+      button.classList.add("hidden");
+      hint.textContent = "重新给你看一次 ♡";
+      await playVideo(PART1);
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && musicStarted && music.paused) {
+        music.play().catch(() => {});
+      }
+    });
+
+    // 页面打开后直接开始第一段影片，不需要点击「开始看信」。
+    // 浏览器若禁止带声音自动播放，就先静音尝试；用户触碰页面后可恢复声音。
+    (async function autoplayFirstVideo() {
+      button.classList.add("hidden");
+      hint.textContent = "影片与音乐正在开始……若手机浏览器限制自动播放，请轻触屏幕一次。";
+
+      // 尽量在网页打开时立即启动背景音乐；手机浏览器可能要求用户先互动。
+      try {
+        music.volume = 0.22;
+        await music.play();
+        musicStarted = true;
+      } catch (musicErr) {
+        // 自动播放被拦截时，在第一次触碰屏幕时立刻尝试开启音乐。
+        const enableMusic = () => {
+          startMusic();
+          document.removeEventListener("pointerdown", enableMusic);
+        };
+        document.addEventListener("pointerdown", enableMusic, { once: true });
+      }
+
+      video.src = PART1;
+      video.load();
+      try {
+        await video.play();
+        hint.textContent = "给你慢慢看 ♡";
+      } catch (err) {
+        try {
+          video.muted = true;
+          await video.play();
+          hint.textContent = "轻触屏幕即可开启声音 ♡";
+          const enableSound = () => {
+            video.muted = false;
+            startMusic();
+            video.play().catch(() => {});
+            document.removeEventListener("pointerdown", enableSound);
+          };
+          document.addEventListener("pointerdown", enableSound, { once: true });
+        } catch (err2) {
+          hint.textContent = "如果影片没有自动播放，请轻触屏幕一次。";
+          button.textContent = "播放影片 ▶";
+          button.classList.remove("hidden");
+          stage = "retry1";
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
